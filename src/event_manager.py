@@ -5,6 +5,9 @@ MAX_DAYS_SHOW = 14
 SEPARATOR = " "
 EVENTS_FILE = "database/events.txt"
 
+def format_error_message(correct_format):
+		return ('El formato es "' + correct_format + '" perro')
+
 def get_uid():
 	with open(EVENTS_FILE, "r") as f:
 		last_line = f.read().split("\n")[-2]
