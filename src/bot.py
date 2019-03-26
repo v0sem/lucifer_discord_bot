@@ -6,13 +6,13 @@ from discord.ext import commands
 VOICE_ERROR = 'You fucked up somehow, wowee'
 
 TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.D3q0yw.C0noUcSN3AyC_LA-wqX5JoVJObw'
-client = commands.Bot(command_prefix = '~')
+client = commands.Bot(command_prefix = '*')
 
 songs = asyncio.Queue()
 play_next_song = asyncio.Event()
 players = {}
 title = ''
-extensions = []
+extensions = ['events']
 
 @client.event
 async def on_ready():
