@@ -12,10 +12,13 @@ class Events:
 	
 	@commands.command()
 	async def viva(self):
+		"""Por Españita"""
 		await self.client.say('~Viva España~')
 	
 	@commands.command(pass_context=True)
 	async def horario(self, ctx):
+		"""Enseña el horario del grupo de informatica de la UAM
+		Depende del nombre del grupo"""
 		try:
 			await self.client.send_file(ctx.message.channel, 
 				IMAGENES_DIR + ctx.message.content[9:12] + '.png')
@@ -24,6 +27,8 @@ class Events:
 	
 	@commands.command(pass_context=True)
 	async def examenes(self, ctx):
+		"""Enseña los proximos examenes
+		Es una foto, pueden haber ocurrido ya"""
 		try:
 			await self.client.send_file(ctx.message.channel, 
 				IMAGENES_DIR + 'examenes.jpeg')
@@ -32,14 +37,17 @@ class Events:
 
 	@commands.command()
 	async def show_all(self):
+		"""Enseña todos los eventos guardados"""
 		await self.client.say(event_manager.read_events())
 	
 	@commands.command()
 	async def show(self):
+		"""Enseña los proximos eventos"""
 		await self.client.say(event_manager.pretty_events())
 	
 	@commands.command()
 	async def add(self, *args):
+		"""Añade un evento a la lista"""
 		try:
 			event_manager.add_event(args[0], args[1], args[2], args[3])
 			await self.client.say(ADDED_MSG)
@@ -50,6 +58,7 @@ class Events:
 	
 	@commands.command()
 	async def search_name(self, name):
+		"""Busca un evento dado un nombre"""
 		try:
 			await self.client.say(event_manager.search_events_name(name))
 		except Exception as e:
@@ -59,6 +68,7 @@ class Events:
 	
 	@commands.command()
 	async def search_day(self, day):
+		"""Busca un evento dado un dia"""
 		try:
 			await self.client.say(event_manager.search_events_day(day))
 		except Exception as e:
@@ -68,6 +78,7 @@ class Events:
 	
 	@commands.command()
 	async def search_month(self, month):
+		"""Busca un evento dado un mes"""
 		try:
 
 			await self.client.say(event_manager.search_events_month(month))
@@ -78,6 +89,7 @@ class Events:
 
 	@commands.command()
 	async def search_year(self, year):
+		"""Busca un evento dado un año"""
 		try:
 			await self.client.say(event_manager.search_events_year(year))
 		except Exception as e:
@@ -87,6 +99,7 @@ class Events:
 
 	@commands.command()
 	async def delete(self, uid):
+		"""Elimina un evento"""
 		try:
 			event_manager.del_event(uid)
 
