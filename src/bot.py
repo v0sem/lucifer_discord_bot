@@ -1,12 +1,16 @@
 import discord
 import youtube_dl
 import asyncio
+import os
 from discord.ext import commands
 
 VOICE_ERROR = 'You fucked up somehow, wowee'
 
 TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.D3q0yw.C0noUcSN3AyC_LA-wqX5JoVJObw'
 client = commands.Bot(command_prefix = '*')
+
+PLAYLISTS_PATH = 'database/playlists/'
+DESCRIPTION = ' with your soul'
 
 songs = asyncio.Queue()
 play_next_song = asyncio.Event()
@@ -17,6 +21,7 @@ extensions = ['events']
 @client.event
 async def on_ready():
 	print('Bot online and ready.')
+	await client.change_presence(game=discord.Game(name=DESCRIPTION))
 
 if __name__ == "__main__":
 	for extension in extensions:
@@ -80,24 +85,59 @@ async def play(ctx, *url):
 	await songs.put(player)
 	await client.say(player.title + ' queued')
 
-@client.command(pass_context=True)
-async def pause(ctx):
+@client.command()
+async def pause():
 	"""Pauses the song currently playing"""
 	players[title].pause()
 	await client.say(title + ' paused')
 
-@client.command(pass_context=True)
-async def resume(ctx):
+@client.command()
+async def resume():
 	"""Resumes the song if its paused"""
 	players[title].resume()
 	await client.say(title + ' resumed')
 
-@client.command(pass_context=True)
-async def skip(ctx):
+@client.command()
+async def skip():
 	"""Skips to the next song in the queue"""
 	players[title].stop()
 	await client.say('Skipped')
 
+@client.command()
+async def create_playlist(playlist_name):
+	"""Creates an empty playlist file"""
+	try:
+		file = open(PLAYLISTS_PATH + playlist_name + '.txt', 'r')
+		await client.say('Playlist ' + playlist_name + ' already exists')
+	except Exception as e:
+		file = open(PLAYLISTS_PATH + playlist_name + '.txt', 'w')
+		await client.say('Playlist ' + playlist_name + ' created')
+
+@client.command()
+async def delete_playlist(playlist_name):
+	"""Delets playlist with the given name"""
+	try:
+		os.remove(PLAYLISTS_PATH + playlist_name + '.txt')
+		await client.say('Playlist is no more')
+	except Exception as e:
+		print(e)
+		await client.say('Playlist (probably) is still alive')
+
+@client.command()
+async def add_to_playlist(playlist_name, *song_name):
+	"""Adds a song to a playlist, duh"""
+	try:
+		file = open(PLAYLISTS_PATH + playlist_name + '.txt', 'r')
+		file.close()
+		file = open(PLAYLISTS_PATH + playlist_name + '.txt', 'a')
+
+		file.write(' '.join(song_name) + '\n')
+		await client.say(' '.join(song_name) + ' was added to ' + playlist_name)
+		file.close()
+	
+	except Exception as e:
+		print(e)
+		await client.say('Playlist most likely does not exist')
 
 client.loop.create_task(audio_player_task())
 client.run(TOKEN)
