@@ -21,6 +21,14 @@ class Events:
 				IMAGENES_DIR + ctx.message.content[9:12] + '.png')
 		except Exception as e:
 			await self.client.say(event_manager.format_error_message('horario group'))
+	
+	@commands.command(pass_context=True)
+	async def examenes(self, ctx):
+		try:
+			await self.client.send_file(ctx.message.channel, 
+				IMAGENES_DIR + 'examenes.jpeg')
+		except Exception as e:
+			await self.client.say(event_manager.format_error_message('No se que leches ha salido mal'))
 
 	@commands.command()
 	async def show_all(self):
