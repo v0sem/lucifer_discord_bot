@@ -12,6 +12,21 @@ songs = asyncio.Queue()
 play_next_song = asyncio.Event()
 players = {}
 title = ''
+extensions = []
+
+@client.event
+async def on_ready():
+	print('Bot online and ready.')
+
+if __name__ == "__main__":
+	for extension in extensions:
+		try:
+			client.load_extension(extension)
+		except Exception as e:
+			print("{} can't be loaded --> {}".format(extension, e))
+
+
+######################## Main Music Functions ##############################
 
 async def audio_player_task():
 	while True:
@@ -27,12 +42,10 @@ async def audio_player_task():
 def toggle_next():
     client.loop.call_soon_threadsafe(play_next_song.set)
 
-@client.event
-async def on_ready():
-	print('Bot online and ready.')
-
 @client.command(pass_context=True)
 async def join(ctx):
+	"""Joins the voice channel you are currently in
+	Lucifer gets angry if you are not in a voice channel"""
 	try:
 		ch = ctx.message.author.voice.voice_channel
 		await client.join_voice_channel(ch)
@@ -42,6 +55,7 @@ async def join(ctx):
 
 @client.command(pass_context=True)
 async def leave(ctx):
+	"""Leaves the channel if its in one"""
 	server = ctx.message.server
 	voice_client = client.voice_client_in(server)
 	if voice_client == None:
@@ -51,29 +65,36 @@ async def leave(ctx):
 
 
 @client.command(pass_context=True)
-async def play(ctx, url):
+async def play(ctx, *url):
+	"""Plays a song or looks up one on youtube
+	Adds the song to a queue and starts playing the queue"""
+	query =' '.join(url)
 	if not client.is_voice_connected(ctx.message.server):
 		voice = await client.join_voice_channel(ctx.message.author.voice_channel)
 	else:
 		voice = client.voice_client_in(ctx.message.server)
 
-	player = await voice.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, after=toggle_next)
+	player = await voice.create_ytdl_player(query, 
+		ytdl_options={'default_search': 'auto'}, after=toggle_next)
 
 	await songs.put(player)
 	await client.say(player.title + ' queued')
 
 @client.command(pass_context=True)
 async def pause(ctx):
+	"""Pauses the song currently playing"""
 	players[title].pause()
 	await client.say(title + ' paused')
 
 @client.command(pass_context=True)
 async def resume(ctx):
+	"""Resumes the song if its paused"""
 	players[title].resume()
 	await client.say(title + ' resumed')
 
 @client.command(pass_context=True)
 async def skip(ctx):
+	"""Skips to the next song in the queue"""
 	players[title].stop()
 	await client.say('Skipped')
 
