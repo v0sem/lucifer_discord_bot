@@ -27,3 +27,11 @@ Bot for discord, my own making. I will refer to the discord client from now on a
    
 ### Event managing
 **_DISCLAIMER_:** This function was very specifically made for my discord server I have with my university partners, you can simply not load the cog or change/remove some functions. You can also change the images in the images folder.
+
+## Requirements
+
++ youtube-dl
+
+   Installed with:
+   
+   ``` pip install youtube-dl --user ```
