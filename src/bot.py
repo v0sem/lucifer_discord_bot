@@ -141,6 +141,32 @@ async def add_to_playlist(ctx, playlist_name, *song_name):
 		print(e)
 		await client.say('Playlist most likely does not exist')
 
+@client.command(pass_context=True)
+async def playlist(ctx, playlist_name):
+	"""Adds all songs from playlist_name into queue"""
+	try:
+		file = open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'r')
+		all_songs = file.read()
+		query = all_songs.split("\n")
+		
+		for song in query:
+			print(song)
+			if len(song) > 2:
+				if not client.is_voice_connected(ctx.message.server):
+					voice = await client.join_voice_channel(ctx.message.author.voice_channel)
+				else:
+					voice = client.voice_client_in(ctx.message.server)
+
+				player = await voice.create_ytdl_player(song, 
+					ytdl_options={'default_search': 'auto'}, after=toggle_next)
+				await songs.put(player)
+		
+		await client.say(playlist_name + ' is queued')
+	
+	except Exception as e:
+		print(e)
+		await client.say('Playlist doesnt exist or isnt reachable')
+
 client.loop.create_task(audio_player_task())
 client.run(TOKEN)
 
