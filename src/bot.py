@@ -40,8 +40,10 @@ async def audio_player_task():
 		global title 
 		title = current.title
 		players[title] = current
+		await client.change_presence(game=discord.Game(name=title))
 		current.start()
 		await play_next_song.wait()
+		await client.change_presence(game=discord.Game(name=DESCRIPTION))
 
 
 def toggle_next():
@@ -103,33 +105,33 @@ async def skip():
 	players[title].stop()
 	await client.say('Skipped')
 
-@client.command()
-async def create_playlist(playlist_name):
+@client.command(pass_context=True)
+async def create_playlist(ctx, playlist_name):
 	"""Creates an empty playlist file"""
 	try:
-		file = open(PLAYLISTS_PATH + playlist_name + '.txt', 'r')
+		file = open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'r')
 		await client.say('Playlist ' + playlist_name + ' already exists')
 	except Exception as e:
-		file = open(PLAYLISTS_PATH + playlist_name + '.txt', 'w')
+		file = open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'w')
 		await client.say('Playlist ' + playlist_name + ' created')
 
-@client.command()
-async def delete_playlist(playlist_name):
+@client.command(pass_context=True)
+async def delete_playlist(ctx, playlist_name):
 	"""Delets playlist with the given name"""
 	try:
-		os.remove(PLAYLISTS_PATH + playlist_name + '.txt')
+		os.remove(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt')
 		await client.say('Playlist is no more')
 	except Exception as e:
 		print(e)
 		await client.say('Playlist (probably) is still alive')
 
-@client.command()
-async def add_to_playlist(playlist_name, *song_name):
+@client.command(pass_context=True)
+async def add_to_playlist(ctx, playlist_name, *song_name):
 	"""Adds a song to a playlist, duh"""
 	try:
-		file = open(PLAYLISTS_PATH + playlist_name + '.txt', 'r')
+		file = open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'r')
 		file.close()
-		file = open(PLAYLISTS_PATH + playlist_name + '.txt', 'a')
+		file = open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'a')
 
 		file.write(' '.join(song_name) + '\n')
 		await client.say(' '.join(song_name) + ' was added to ' + playlist_name)

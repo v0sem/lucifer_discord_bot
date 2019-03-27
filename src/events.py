@@ -46,10 +46,10 @@ class Events:
 		await self.client.say(event_manager.pretty_events())
 	
 	@commands.command()
-	async def add(self, *args):
+	async def add(self, name, day, month, year):
 		"""Añade un evento a la lista"""
 		try:
-			event_manager.add_event(args[0], args[1], args[2], args[3])
+			event_manager.add_event(name, day, month, year)
 			await self.client.say(ADDED_MSG)
 		except Exception as e:
 			print(e)
