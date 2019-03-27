@@ -1,6 +1,6 @@
 import discord
-import event_manager
 from discord.ext import commands
+import event_manager
 
 IMAGENES_DIR = 'images/'
 ADDED_MSG = ' Added correctly OwO'

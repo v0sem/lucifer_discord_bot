@@ -142,6 +142,28 @@ async def add_to_playlist(ctx, playlist_name, *song_name):
 		await client.say('Playlist most likely does not exist')
 
 @client.command(pass_context=True)
+async def remove_from_playlist(ctx, playlist_name, *song):
+	song_name = ' '.join(song)
+
+	try:
+		with open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'r') as f:
+			lines = f.readlines()
+		with open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'w') as f:
+			for line in lines:
+				if line.strip("\n") != song_name:
+					f.write(line)
+				else:
+					 await client.say(song_name + ' deleted')
+		f.close()
+	except Exception as e:
+		print(e)
+		await client.say('You probably messed up somewhere')
+
+
+
+
+
+@client.command(pass_context=True)
 async def playlist(ctx, playlist_name):
 	"""Adds all songs from playlist_name into queue"""
 	try:
