@@ -1,6 +1,16 @@
 # Lucifer discord bot
 Bot for discord, my own making. I will refer to the discord client from now on as Satan and the bot itself as Lucifer for simplicity's (and fun's) sake.
 
+## Index
+
++ [Freatures](##Freatures)
+   
+   + [Song playing and queuing](#Song-playing-and-queuing)
+
+   + [Event managing](#Event-managing)
+
++ [Requirements](#Requirements)
+
 ## Freatures
 
 ### Song playing and queuing
@@ -28,10 +38,30 @@ Bot for discord, my own making. I will refer to the discord client from now on a
 ### Event managing
 **_DISCLAIMER_:** This function was very specifically made for my discord server I have with my university partners, you can simply not load the cog or change/remove some functions. You can also change the images in the images folder.
 
++ Event adding and searching
+   
+   You can add events and Satan will tell you how many days left you got for the due date specified.
+
++ Pictures
+
+   You can store pictures in the images/ directory for the command horario to show them, right now its used for showing the timetables of my degree
+
 ## Requirements
 
 + youtube-dl
 
    Installed with:
    
-   ``` pip install youtube-dl --user ```
+   ``` pip install youtube-dl --user ``` 
+
+   --user is equivalent to sudo, but for some reason sudo wouldnt work in my system
+
++ ffmpeg player
+
+   Installed with:
+
+   ``` pip install ffmpeg-python --user ```
+
++ Linux
+
+   For windows users you could change the ' / ' to ' \\ ' but there could be more compatibility issues I'm not aware of.
