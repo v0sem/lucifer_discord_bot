@@ -6,7 +6,7 @@ from discord.ext import commands
 
 VOICE_ERROR = 'You fucked up somehow, wowee'
 
-TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.D3q0yw.C0noUcSN3AyC_LA-wqX5JoVJObw'
+TOKEN = ''
 client = commands.Bot(command_prefix = '*')
 
 PLAYLISTS_PATH = 'database/playlists/'
@@ -36,12 +36,14 @@ if __name__ == "__main__":
 async def audio_player_task():
 	while True:
 		play_next_song.clear()
-		current = await songs.get()
+		query = await songs.get()
+		player = await voice.create_ytdl_player(query, 
+			ytdl_options={'default_search': 'auto'}, after=toggle_next)
 		global title 
-		title = current.title
-		players[title] = current
+		title = player.title
+		players[title] = player
 		await client.change_presence(game=discord.Game(name=title))
-		current.start()
+		player.start()
 		await play_next_song.wait()
 		await client.change_presence(game=discord.Game(name=DESCRIPTION))
 
@@ -81,11 +83,8 @@ async def play(ctx, *url):
 	else:
 		voice = client.voice_client_in(ctx.message.server)
 
-	player = await voice.create_ytdl_player(query, 
-		ytdl_options={'default_search': 'auto'}, after=toggle_next)
-
-	await songs.put(player)
-	await client.say(player.title + ' queued')
+	await songs.put(query)
+	await client.say(query + ' queued')
 
 @client.command()
 async def pause():
@@ -160,9 +159,6 @@ async def remove_from_playlist(ctx, playlist_name, *song):
 		await client.say('You probably messed up somewhere')
 
 
-
-
-
 @client.command(pass_context=True)
 async def playlist(ctx, playlist_name):
 	"""Adds all songs from playlist_name into queue"""
@@ -179,9 +175,7 @@ async def playlist(ctx, playlist_name):
 				else:
 					voice = client.voice_client_in(ctx.message.server)
 
-				player = await voice.create_ytdl_player(song, 
-					ytdl_options={'default_search': 'auto'}, after=toggle_next)
-				await songs.put(player)
+				await songs.put(song)
 		
 		await client.say(playlist_name + ' is queued')
 	
