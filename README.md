@@ -3,7 +3,7 @@ Bot for discord, my own making. I will refer to the discord client from now on a
 
 ## Index
 
-+ [Freatures](##Freatures)
++ [Freatures](#Freatures)
    
    + [Song playing and queuing](#Song-playing-and-queuing)
 
