@@ -10,13 +10,15 @@ TOKEN = ''
 client = commands.Bot(command_prefix = '*')
 
 PLAYLISTS_PATH = 'database/playlists/'
-DESCRIPTION = ' with your soul'
+DESCRIPTION = 'with your soul'
+MUSIC = 'music/'
 
+names = asyncio.Queue()
 songs = asyncio.Queue()
 play_next_song = asyncio.Event()
 players = {}
-title = ''
 extensions = ['events']
+
 
 @client.event
 async def on_ready():
@@ -30,22 +32,19 @@ if __name__ == "__main__":
 		except Exception as e:
 			print("{} can't be loaded --> {}".format(extension, e))
 
-
 ######################## Main Music Functions ##############################
 
 async def audio_player_task():
 	while True:
 		play_next_song.clear()
-		query = await songs.get()
-		player = await voice.create_ytdl_player(query, 
-			ytdl_options={'default_search': 'auto'}, after=toggle_next)
-		global title 
-		title = player.title
-		players[title] = player
+		current = await songs.get()
+		title = await names.get()
+		players[1] = current
 		await client.change_presence(game=discord.Game(name=title))
-		player.start()
+		current.start()
 		await play_next_song.wait()
 		await client.change_presence(game=discord.Game(name=DESCRIPTION))
+		os.remove(MUSIC + title + '.opus')
 
 
 def toggle_next():
@@ -57,9 +56,10 @@ async def join(ctx):
 	Lucifer gets angry if you are not in a voice channel"""
 	try:
 		ch = ctx.message.author.voice.voice_channel
-		await client.join_voice_channel(ch)
+		voice = await client.join_voice_channel(ch)
 		await client.send_message(ctx.message.channel, 'Joined voice channel')
 	except Exception as e:
+		print(e)
 		await client.send_message(ctx.message.channel,'This is not okay dude')
 
 @client.command(pass_context=True)
@@ -82,26 +82,44 @@ async def play(ctx, *url):
 		voice = await client.join_voice_channel(ctx.message.author.voice_channel)
 	else:
 		voice = client.voice_client_in(ctx.message.server)
+		
+	outtmpl = MUSIC + query + '.%(ext)s'
 
-	await songs.put(query)
+	ydl_opts = {
+		'format': 'bestaudio/best',
+		'outtmpl': outtmpl,
+		'postprocessors': [{
+			'key': 'FFmpegExtractAudio',
+			'preferredcodec': 'opus',
+			'preferredquality': '192',
+   		}],
+		'default_search': 'auto'
+	}
+	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+		ydl.download([query])
+
+	player = voice.create_ffmpeg_player(MUSIC + query + '.opus', after=toggle_next)
+
+	await names.put(query)
+	await songs.put(player)
 	await client.say(query + ' queued')
 
 @client.command()
 async def pause():
 	"""Pauses the song currently playing"""
-	players[title].pause()
-	await client.say(title + ' paused')
+	players[1].pause()
+	await client.say('Paused')
 
 @client.command()
 async def resume():
 	"""Resumes the song if its paused"""
-	players[title].resume()
-	await client.say(title + ' resumed')
+	players[1].resume()
+	await client.say('Resumed')
 
 @client.command()
 async def skip():
 	"""Skips to the next song in the queue"""
-	players[title].stop()
+	players[1].stop()
 	await client.say('Skipped')
 
 @client.command(pass_context=True)
@@ -166,17 +184,30 @@ async def playlist(ctx, playlist_name):
 		file = open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'r')
 		all_songs = file.read()
 		query = all_songs.split("\n")
-		
+		if not client.is_voice_connected(ctx.message.server):
+			voice = await client.join_voice_channel(ctx.message.author.voice_channel)
+		else:
+			voice = client.voice_client_in(ctx.message.server)
 		for song in query:
 			print(song)
 			if len(song) > 2:
-				if not client.is_voice_connected(ctx.message.server):
-					voice = await client.join_voice_channel(ctx.message.author.voice_channel)
-				else:
-					voice = client.voice_client_in(ctx.message.server)
+				outtmpl = MUSIC + song + '.%(ext)s'
+				ydl_opts = {
+					'format': 'bestaudio/best',
+					'outtmpl': outtmpl,
+					'postprocessors': [{
+						'key': 'FFmpegExtractAudio',
+						'preferredcodec': 'opus',
+						'preferredquality': '192',
+			   		}],
+					'default_search': 'auto'
+				}
+				with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+					ydl.download([song])
 
-				await songs.put(song)
-		
+				player = voice.create_ffmpeg_player(MUSIC + song + '.opus', after=toggle_next)
+				await songs.put(player)
+				await names.put(song)
 		await client.say(playlist_name + ' is queued')
 	
 	except Exception as e:
