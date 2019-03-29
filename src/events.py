@@ -10,11 +10,6 @@ class Events:
 	def __init__(self, client):
 		self.client = client
 	
-	@commands.command()
-	async def viva(self):
-		"""Por Españita"""
-		await self.client.say('~Viva España~')
-	
 	@commands.command(pass_context=True)
 	async def horario(self, ctx):
 		"""Enseña el horario del grupo de informatica de la UAM

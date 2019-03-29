@@ -11,13 +11,13 @@ client = commands.Bot(command_prefix = '*')
 
 PLAYLISTS_PATH = 'database/playlists/'
 DESCRIPTION = 'with your soul'
-MUSIC = 'music/'
+MUSIC = 'database/music/'
 
 names = asyncio.Queue()
 songs = asyncio.Queue()
 play_next_song = asyncio.Event()
 players = {}
-extensions = ['events']
+extensions = ['events', 'memes']
 
 
 @client.event
