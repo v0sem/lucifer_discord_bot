@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import event_manager
 
-IMAGENES_DIR = 'images/'
+IMAGENES_DIR = 'database/images/'
 ADDED_MSG = ' Added correctly OwO'
 DELETED_MSG = ' Deleted correctly UwU'
 
