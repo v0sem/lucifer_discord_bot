@@ -6,7 +6,7 @@ from discord.ext import commands
 
 VOICE_ERROR = 'You fucked up somehow, wowee'
 
-TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.D34bqw.q29_sMZoac9GWhD3lDACqmsPtjw'
+TOKEN = ''
 client = commands.Bot(command_prefix = '*')
 
 PLAYLISTS_PATH = 'database/playlists/'
