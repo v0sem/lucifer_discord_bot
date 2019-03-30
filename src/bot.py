@@ -6,7 +6,7 @@ from discord.ext import commands
 
 VOICE_ERROR = 'You fucked up somehow, wowee'
 
-TOKEN = ''
+TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.D34bqw.q29_sMZoac9GWhD3lDACqmsPtjw'
 client = commands.Bot(command_prefix = '*')
 
 PLAYLISTS_PATH = 'database/playlists/'
@@ -31,20 +31,26 @@ if __name__ == "__main__":
 			client.load_extension(extension)
 		except Exception as e:
 			print("{} can't be loaded --> {}".format(extension, e))
+		print(extension + " loaded")
 
 ######################## Main Music Functions ##############################
 
 async def audio_player_task():
 	while True:
-		play_next_song.clear()
-		current = await songs.get()
-		title = await names.get()
-		players[1] = current
-		await client.change_presence(game=discord.Game(name=title))
-		current.start()
-		await play_next_song.wait()
-		await client.change_presence(game=discord.Game(name=DESCRIPTION))
-		os.remove(MUSIC + title + '.opus')
+		try:
+			play_next_song.clear()
+			current = await songs.get()
+			title = await names.get()
+			players[1] = current
+			await client.change_presence(game=discord.Game(name=title))
+			current.start()
+			await play_next_song.wait()
+			await client.change_presence(game=discord.Game(name=DESCRIPTION))
+			os.remove(MUSIC + title + '.opus')
+		except Exception as e:
+			print(e)
+			continue
+
 
 
 def toggle_next():
@@ -76,7 +82,8 @@ async def leave(ctx):
 @client.command(pass_context=True)
 async def play(ctx, *url):
 	"""Plays a song or looks up one on youtube
-	Adds the song to a queue and starts playing the queue"""
+	Adds the song to a queue and starts playing the queue
+	[URLS ARE NOT SUPPORTED NOW]"""
 	query =' '.join(url)
 	if not client.is_voice_connected(ctx.message.server):
 		voice = await client.join_voice_channel(ctx.message.author.voice_channel)
@@ -86,7 +93,7 @@ async def play(ctx, *url):
 	outtmpl = MUSIC + query + '.%(ext)s'
 
 	ydl_opts = {
-		'format': 'bestaudio/best',
+		'format': 'bestaudio',
 		'outtmpl': outtmpl,
 		'postprocessors': [{
 			'key': 'FFmpegExtractAudio',
@@ -97,8 +104,12 @@ async def play(ctx, *url):
 	}
 	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 		ydl.download([query])
-
-	player = voice.create_ffmpeg_player(MUSIC + query + '.opus', after=toggle_next)
+	try:
+		player = voice.create_ffmpeg_player(MUSIC + query + '.opus', after=toggle_next)
+	except Exception as e:
+		print(e)
+		await client.say('There was something wrong, maybe you used a url')
+		return
 
 	await names.put(query)
 	await songs.put(player)
@@ -107,20 +118,32 @@ async def play(ctx, *url):
 @client.command()
 async def pause():
 	"""Pauses the song currently playing"""
-	players[1].pause()
-	await client.say('Paused')
+	try:
+		players[1].pause()
+		await client.say('Paused')
+	except Exception as e:
+		print(e)
+		await client.say("There *probably* isn't any song playing")
 
 @client.command()
 async def resume():
 	"""Resumes the song if its paused"""
-	players[1].resume()
-	await client.say('Resumed')
+	try:
+		players[1].resume()
+		await client.say('Resumed')
+	except Exception as e:
+		print(e)
+		await client.say("There *probably* ins't any song paused")
 
 @client.command()
 async def skip():
 	"""Skips to the next song in the queue"""
-	players[1].stop()
-	await client.say('Skipped')
+	try:
+		players[1].stop()
+		await client.say('Skipped')
+	except Exception as e:
+		print(e)
+		await client.say('Something went wrong')
 
 @client.command(pass_context=True)
 async def create_playlist(ctx, playlist_name):
@@ -193,7 +216,7 @@ async def playlist(ctx, playlist_name):
 			if len(song) > 2:
 				outtmpl = MUSIC + song + '.%(ext)s'
 				ydl_opts = {
-					'format': 'bestaudio/best',
+					'format': 'bestaudio',
 					'outtmpl': outtmpl,
 					'postprocessors': [{
 						'key': 'FFmpegExtractAudio',
@@ -204,8 +227,13 @@ async def playlist(ctx, playlist_name):
 				}
 				with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 					ydl.download([song])
+				try:
+					player = voice.create_ffmpeg_player(MUSIC + song + '.opus', after=toggle_next)
+				except Exception as e:
+					print(e)
+					await client.say('There was a problem with' + song)
+					continue
 
-				player = voice.create_ffmpeg_player(MUSIC + song + '.opus', after=toggle_next)
 				await songs.put(player)
 				await names.put(song)
 		await client.say(playlist_name + ' is queued')
