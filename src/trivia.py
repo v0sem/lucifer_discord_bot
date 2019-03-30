@@ -16,7 +16,8 @@ class Trivia:
 			'a': a,
 			'b': b,
 			'c': c,
-			'd': d
+			'd': d,
+			'answer': answer
 		}
 
 def setup(client):

@@ -1,0 +1,7 @@
+Q:¿De qué color era el caballo de Santiago?
+A: Blanco
+B: Negro
+C: No tenía caballo
+D: Azul
+R: A
+#
