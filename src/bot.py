@@ -6,15 +6,15 @@ from discord.ext import commands
 from ctypes.util import find_library
 
 VOICE_ERROR = 'You fucked up somehow, wowee'
-
 TOKEN = ''
 client = commands.Bot(command_prefix = '*')
 
 PLAYLISTS_PATH = 'database/playlists/'
 DESCRIPTION = 'with your soul'
 MUSIC = 'database/music/'
-OPUS_LIB = find_library('opus')
 
+opus = find_library('opus')
+discord.opus.load_opus(opus)
 names = asyncio.Queue()
 songs = asyncio.Queue()
 play_next_song = asyncio.Event()
@@ -23,7 +23,6 @@ extensions = ['events', 'memes']
 
 @client.event
 async def on_ready():
-	discord.opus.load_opus()
 	print('Bot online and ready.')
 	await client.change_presence(game=discord.Game(name=DESCRIPTION))
 
