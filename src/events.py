@@ -2,11 +2,7 @@ import discord
 from discord.ext import commands
 import event_manager
 
-<<<<<<< HEAD
 IMAGENES_DIR = 'database/images/'
-=======
-IMAGENES_DIR = 'images/'
->>>>>>> 5f4fedc022f0e9c6f15ddc13d90db519eadc72ed
 ADDED_MSG = ' Added correctly OwO'
 DELETED_MSG = ' Deleted correctly UwU'
 
@@ -14,14 +10,6 @@ class Events:
 	def __init__(self, client):
 		self.client = client
 	
-<<<<<<< HEAD
-=======
-	@commands.command()
-	async def viva(self):
-		"""Por Españita"""
-		await self.client.say('~Viva España~')
-	
->>>>>>> 5f4fedc022f0e9c6f15ddc13d90db519eadc72ed
 	@commands.command(pass_context=True)
 	async def horario(self, ctx):
 		"""Enseña el horario del grupo de informatica de la UAM
