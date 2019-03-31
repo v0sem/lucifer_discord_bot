@@ -3,15 +3,17 @@ import youtube_dl
 import asyncio
 import os
 from discord.ext import commands
+from ctypes.util import find_library
 
 VOICE_ERROR = 'You fucked up somehow, wowee'
 
-TOKEN = ''
+TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.D34bqw.q29_sMZoac9GWhD3lDACqmsPtjw'
 client = commands.Bot(command_prefix = '*')
 
 PLAYLISTS_PATH = 'database/playlists/'
 DESCRIPTION = 'with your soul'
 MUSIC = 'database/music/'
+OPUS_LIB = find_library('opus')
 
 names = asyncio.Queue()
 songs = asyncio.Queue()
@@ -19,9 +21,9 @@ play_next_song = asyncio.Event()
 players = {}
 extensions = ['events', 'memes']
 
-
 @client.event
 async def on_ready():
+	discord.opus.load_opus()
 	print('Bot online and ready.')
 	await client.change_presence(game=discord.Game(name=DESCRIPTION))
 
@@ -29,27 +31,23 @@ if __name__ == "__main__":
 	for extension in extensions:
 		try:
 			client.load_extension(extension)
+			print(extension + " loaded")
 		except Exception as e:
 			print("{} can't be loaded --> {}".format(extension, e))
-		print(extension + " loaded")
 
 ######################## Main Music Functions ##############################
 
 async def audio_player_task():
 	while True:
-		try:
-			play_next_song.clear()
-			current = await songs.get()
-			title = await names.get()
-			players[1] = current
-			await client.change_presence(game=discord.Game(name=title))
-			current.start()
-			await play_next_song.wait()
-			await client.change_presence(game=discord.Game(name=DESCRIPTION))
-			os.remove(MUSIC + title + '.opus')
-		except Exception as e:
-			print(e)
-			continue
+		play_next_song.clear()
+		current = await songs.get()
+		title = await names.get()
+		players[1] = current
+		await client.change_presence(game=discord.Game(name=title))
+		current.start()
+		await play_next_song.wait()
+		await client.change_presence(game=discord.Game(name=DESCRIPTION))
+		os.remove(MUSIC + title + '.opus')
 
 
 
@@ -102,9 +100,10 @@ async def play(ctx, *url):
    		}],
 		'default_search': 'auto'
 	}
-	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-		ydl.download([query])
 	try:
+		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+			ydl.download([query])
+	
 		player = voice.create_ffmpeg_player(MUSIC + query + '.opus', after=toggle_next)
 	except Exception as e:
 		print(e)
@@ -199,6 +198,18 @@ async def remove_from_playlist(ctx, playlist_name, *song):
 		print(e)
 		await client.say('You probably messed up somewhere')
 
+@client.command(pass_context=True)
+async def show_playlist(ctx, playlist_name):
+	try:
+		with open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'r') as f:
+			lines = f.readlines()
+			await client.say('Playlist ' + playlist_name + ' contains:')
+			for line in lines:
+				line.strip('\n')
+				await client.say('- ' + line)
+	except Exception as e:
+		print(e)
+		await client.say('Are you shure about that?')
 
 @client.command(pass_context=True)
 async def playlist(ctx, playlist_name):
