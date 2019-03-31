@@ -2,16 +2,17 @@ import discord
 import youtube_dl
 import asyncio
 import os
+import random
 from discord.ext import commands
 from ctypes.util import find_library
 
-VOICE_ERROR = 'You fucked up somehow, wowee'
 TOKEN = ''
 client = commands.Bot(command_prefix = '*')
 
 PLAYLISTS_PATH = 'database/playlists/'
 DESCRIPTION = 'with your soul'
 MUSIC = 'database/music/'
+VOICE_ERROR = 'You fucked up somehow, wowee'
 
 opus = find_library('opus')
 discord.opus.load_opus(opus)
@@ -38,6 +39,10 @@ if __name__ == "__main__":
 
 async def audio_player_task():
 	while True:
+		try:
+			await client.change_presence(game=discord.Game(name=DESCRIPTION))
+		except Exception as e:
+			print(e)
 		play_next_song.clear()
 		current = await songs.get()
 		title = await names.get()
@@ -45,7 +50,6 @@ async def audio_player_task():
 		await client.change_presence(game=discord.Game(name=title))
 		current.start()
 		await play_next_song.wait()
-		await client.change_presence(game=discord.Game(name=DESCRIPTION))
 		os.remove(MUSIC + title + '.opus')
 
 
@@ -209,6 +213,48 @@ async def show_playlist(ctx, playlist_name):
 	except Exception as e:
 		print(e)
 		await client.say('Are you shure about that?')
+
+@client.command(pass_context=True)
+async def shuffle(ctx, playlist_name):
+	try:
+		file = open(PLAYLISTS_PATH + ctx.message.server.id + playlist_name + '.txt', 'r')
+		all_songs = file.read()
+		query = all_songs.split("\n")
+		if not client.is_voice_connected(ctx.message.server):
+			voice = await client.join_voice_channel(ctx.message.author.voice_channel)
+		else:
+			voice = client.voice_client_in(ctx.message.server)
+		random.shuffle(query)
+		for song in query:
+			print(song)
+			if len(song) > 2:
+				outtmpl = MUSIC + song + '.%(ext)s'
+				ydl_opts = {
+					'format': 'bestaudio',
+					'outtmpl': outtmpl,
+					'postprocessors': [{
+						'key': 'FFmpegExtractAudio',
+						'preferredcodec': 'opus',
+						'preferredquality': '192',
+			   		}],
+					'default_search': 'auto'
+				}
+				with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+					ydl.download([song])
+				try:
+					player = voice.create_ffmpeg_player(MUSIC + song + '.opus', after=toggle_next)
+				except Exception as e:
+					print(e)
+					await client.say('There was a problem with' + song)
+					continue
+
+				await songs.put(player)
+				await names.put(song)
+		await client.say(playlist_name + ' is queued')
+	
+	except Exception as e:
+		print(e)
+		await client.say('Playlist doesnt exist or isnt reachable')
 
 @client.command(pass_context=True)
 async def playlist(ctx, playlist_name):
