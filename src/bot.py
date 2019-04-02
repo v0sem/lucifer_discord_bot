@@ -39,10 +39,6 @@ if __name__ == "__main__":
 
 async def audio_player_task():
 	while True:
-		try:
-			await client.change_presence(game=discord.Game(name=DESCRIPTION))
-		except Exception as e:
-			print(e)
 		play_next_song.clear()
 		current = await songs.get()
 		title = await names.get()
@@ -51,11 +47,15 @@ async def audio_player_task():
 		current.start()
 		await play_next_song.wait()
 		os.remove(MUSIC + title + '.opus')
+		try:
+			await client.change_presence(game=discord.Game(name=DESCRIPTION))
+		except Exception as e:
+			print(e)
 
 
 
 def toggle_next():
-    client.loop.call_soon_threadsafe(play_next_song.set)
+    client.loop.call_soon_threadsafe(play_next_song.set())
 
 @client.command(pass_context=True)
 async def join(ctx):
