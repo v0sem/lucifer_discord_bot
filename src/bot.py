@@ -212,7 +212,18 @@ async def show_playlist(ctx, playlist_name):
 				await client.say('- ' + line)
 	except Exception as e:
 		print(e)
-		await client.say('Are you shure about that?')
+		await client.say('Are you sure about that?')
+
+@client.command(pass_context=True)
+async def show_all_playlist(ctx):
+	try:
+		for filename in os.listdir(PLAYLISTS_PATH):
+			if filename.startswith(ctx.message.server.id):
+				filename = filename[18:-4]
+				await client.say(filename)
+	except Exception as e:
+		print(e)
+		await client.say('Something went wrong')
 
 @client.command(pass_context=True)
 async def shuffle(ctx, playlist_name):
