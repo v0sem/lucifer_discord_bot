@@ -1,10 +1,9 @@
 import discord
 # import youtube_dl
-import asyncio
+# import asyncio
 import os
 # import random
 from discord.ext import commands
-from ctypes.util import find_library
 
 TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.XYPHcQ.XsO7X7xk_cfYD33V3LSLlrOKfBg'
 client = discord.client
