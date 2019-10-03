@@ -63,8 +63,8 @@ Bot for discord, my own making. I will refer to the discord client from now on a
 
    Installed with:
 
-   ``` pip install ffmpeg-python```
+   ``` apt install ffmpeg```
 
 + Linux
 
-   For windows users you could change the ' / ' to ' \\ ' but there could be more compatibility issues I'm not aware of.
+   For windows users change the paths to absolute and put the `C:` or the desired disk at the start of the paths

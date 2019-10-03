@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from threading import Lock, Thread
 import discord
 import youtube_dl
 # import asyncio
@@ -16,7 +17,17 @@ VOICE_ERROR = 'You fucked up somehow'
 MUSIC = 'database/music/tmp/'
 
 extensions = []
+mutex = Lock()
 
+def queue(voice_ch, save):
+    mutex.acquire()
+    try:
+        voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
+
+        while voice_ch.is_playing() or voice_ch.is_paused():
+            pass
+    finally:
+        mutex.release()    
 
 @bot.event
 async def on_ready():
@@ -44,8 +55,9 @@ if __name__ == "__main__":
 
 
 @bot.command(pass_context=True)
-async def out():
-    client.close()
+@commands.is_owner()
+async def out(ctx):
+    await ctx.bot.logout()
 
 # Main Music Functions
 @bot.command(pass_context=True)
@@ -84,7 +96,8 @@ async def play(ctx, *song_name):
         return
     
     query = ' '.join(song_name)
-    outtmpl = MUSIC + query + '.%(ext)s'
+    save = ''.join(song_name)
+    outtmpl = MUSIC + save + '.%(ext)s'
 
     ydl_opts = {
         'format': 'bestaudio',
@@ -99,8 +112,9 @@ async def play(ctx, *song_name):
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download(['ytsearch:'+ query])
     
-    voice_ch.play(discord.FFmpegPCMAudio(MUSIC + query + '.mp3'))
-
+    #voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
+    thread = Thread(target = queue, args = (voice_ch, save))
+    thread.start()
 
 
 # Playlist functions

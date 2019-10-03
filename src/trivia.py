@@ -1,5 +1,6 @@
-import discord
+import discord 
 from discord.ext import commands
+
 
 TRIVIA = 'database/trivia/questions.txt'
 puntuations = {}
