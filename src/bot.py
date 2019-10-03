@@ -1,17 +1,19 @@
+from __future__ import unicode_literals
 import discord
-# import youtube_dl
+import youtube_dl
 # import asyncio
 import os
 # import random
 from discord.ext import commands
 
-TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.XYPHcQ.XsO7X7xk_cfYD33V3LSLlrOKfBg'
+TOKEN = ''
 client = discord.client
 bot = commands.Bot(command_prefix='*')
 
-PLAYLISTS_PATH = 'C:/Users/psr19/PycharmProjects/lucifer_discord_bot/database/playlists/'
+PLAYLISTS_PATH = 'database/playlists/'
 DESCRIPTION = 'with your soul'
-VOICE_ERROR = 'You fucked up somehow, wowee'
+VOICE_ERROR = 'You fucked up somehow'
+MUSIC = 'database/music/tmp/'
 
 extensions = []
 
@@ -22,6 +24,16 @@ async def on_ready():
     game = discord.Game("With your soul")
     await bot.change_presence(activity=game)
 
+@bot.event
+async def on_disconnect():
+    for file_ in os.listdir(MUSIC):
+        file_path = os.path.join(MUSIC, file_)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(e)
+
 if __name__ == "__main__":
     for extension in extensions:
         try:
@@ -30,6 +42,10 @@ if __name__ == "__main__":
         except Exception as e:
             print("{} can't be loaded --> {}".format(extension, e))
 
+
+@bot.command(pass_context=True)
+async def out():
+    client.close()
 
 # Main Music Functions
 @bot.command(pass_context=True)
@@ -40,7 +56,7 @@ async def join(ctx):
         ch = ctx.message.author.voice.channel
         await ch.connect()
         await ctx.message.channel.send('Joined voice channel')
-    except discord.ClientException:
+    except (discord.ClientException, AttributeError) as e:
         print(e)
         await ctx.message.channel.send('This is not okay dude')
 
@@ -48,13 +64,46 @@ async def join(ctx):
 @bot.command(pass_context=True)
 async def leave(ctx):
     """Leaves the channel if its in one"""
-    server = ctx.message.guild.voice_client
-    if server is None:
+    voice_ch = ctx.message.guild.voice_client
+    if voice_ch is None:
         await ctx.message.channel.send('This is not okay dude')
     else:
-        await server.disconnect()
+        await voice_ch.disconnect()
+
+@bot.command(pass_context=True)
+async def play(ctx, *song_name):
+    """Plays the requested song"""
+   
+    voice_ch = ctx.message.guild.voice_client
+    
+    if voice_ch is None:
+        await join.invoke(ctx)
+
+    voice_ch = ctx.message.guild.voice_client
+    if voice_ch is None:
+        return
+    
+    query = ' '.join(song_name)
+    outtmpl = MUSIC + query + '.%(ext)s'
+
+    ydl_opts = {
+        'format': 'bestaudio',
+        'outtmpl': outtmpl,
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+        }],
+        'defaultsearch': 'ytsearch'
+    }
+    
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download(['ytsearch:'+ query])
+    
+    voice_ch.play(discord.FFmpegPCMAudio(MUSIC + query + '.mp3'))
 
 
+
+# Playlist functions
 @bot.command(pass_context=True)
 async def create_playlist(ctx, playlist_name):
     """Creates an empty playlist file"""

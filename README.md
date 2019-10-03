@@ -5,9 +5,7 @@ Bot for discord, my own making. I will refer to the discord client from now on a
 
 + [Features](#Features)
    
-   + [Song playing and queuing](#Song-playing-and-queuing)
-
-   + [Event managing](#Event-managing)
+   + [Song playing and queuing](#Song-playing-and-queuing) [UNDER CONSTRUCTION]
 
 + [Requirements](#Requirements)
 
@@ -31,9 +29,9 @@ Bot for discord, my own making. I will refer to the discord client from now on a
 
 + Playlist functions
 
-   You can create a playlist unique in your server, meaning you can only access playlists created from within your server and there can't be two playlists with the same name in your server. You can also delete playlists from your server.
+   You can create a playlist and add songs to it.
    
-   Calling the playlist command will add to the queue all of the songs contained by the playlist, wich you can add with the add_to_playlist command, you should also be able to remove songs from a playlist. Again, all of this only to your servers playlists.
+   Calling the playlist command will add to the queue all of the songs contained by the playlist, wich you can add with the add_to_playlist command, you should also be able to remove songs from a playlist.
    
 ### Event managing
 **_DISCLAIMER_:** This function was very specifically made for my discord server I have with my university partners, you can simply not load the cog or change/remove some functions. You can also change the images in the images folder.
@@ -48,19 +46,24 @@ Bot for discord, my own making. I will refer to the discord client from now on a
 
 ## Requirements
 
++ discord
+
+   Installed with:
+
+   ``` pip install discord ```
+
 + youtube-dl
 
    Installed with:
    
-   ``` pip install youtube-dl --user ``` 
+   ``` pip install youtube-dl``` 
 
-   --user is equivalent to sudo, but for some reason sudo wouldnt work in my system
 
 + ffmpeg player
 
    Installed with:
 
-   ``` pip install ffmpeg-python --user ```
+   ``` pip install ffmpeg-python```
 
 + Linux
 
