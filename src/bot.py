@@ -9,7 +9,8 @@ from discord.ext import commands
 
 TOKEN = ''
 client = discord.client
-bot = commands.Bot(command_prefix='*')
+PREFIX ='*'
+bot = commands.Bot(command_prefix=PREFIX)
 
 PLAYLISTS_PATH = 'database/playlists/'
 DESCRIPTION = 'with your soul'
@@ -17,17 +18,7 @@ VOICE_ERROR = 'You fucked up somehow'
 MUSIC = 'database/music/tmp/'
 
 extensions = []
-mutex = Lock()
-
-def queue(voice_ch, save):
-    mutex.acquire()
-    try:
-        voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
-
-        while voice_ch.is_playing() or voice_ch.is_paused():
-            pass
-    finally:
-        mutex.release()    
+mutex = Lock()   
 
 @bot.event
 async def on_ready():
@@ -82,6 +73,21 @@ async def leave(ctx):
     else:
         await voice_ch.disconnect()
 
+# ########################AUX FUNCTION################### #
+async def queue(voice_ch, save, query):
+    mutex.acquire()
+
+    game = discord.Game(query)
+    await bot.change_presence(activity=game)
+    try:
+        voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
+
+        while voice_ch.is_playing() or voice_ch.is_paused():
+            pass
+    finally:
+        mutex.release() 
+# ####################################################### #
+
 @bot.command(pass_context=True)
 async def play(ctx, *song_name):
     """Plays the requested song"""
@@ -113,11 +119,78 @@ async def play(ctx, *song_name):
         ydl.download(['ytsearch:'+ query])
     
     #voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
-    thread = Thread(target = queue, args = (voice_ch, save))
+    thread = Thread(target = queue, args = (voice_ch, save, query))
     thread.start()
+    await ctx.message.channel.send(query + ' queued')
 
+
+@bot.command(pass_context=True)
+async def pause(ctx):
+    """Pauses the song that is currently playing"""
+    voice_ch = ctx.message.guild.voice_client
+    if voice_ch is None:
+        await ctx.message.channel.send('I am not playing anything')
+        return
+    
+    voice_ch.pause()
+
+
+@bot.command(pass_context=True)
+async def skip(ctx):
+    """Skips the song that is currently playing"""
+    voice_ch = ctx.message.guild.voice_client
+    if voice_ch is None:
+        await ctx.message.channel.send('I am not playing anything')
+        return
+    
+    voice_ch.stop()
+
+
+@bot.command(pass_context=True)
+async def resume(ctx):
+    """Skips the song that is currently playing"""
+    voice_ch = ctx.message.guild.voice_client
+    if voice_ch is None:
+        await ctx.message.channel.send('Nothing on queue! use '+ PREFIX +'play to queue something')
+        return
+    
+    voice_ch.resume()
 
 # Playlist functions
+
+# ########################AUX FUNCTION################### #
+def read_playlist(path):
+    
+    playlist = []
+    try:
+        path = os.path.realpath(path)
+        file = open(path + '.txt', 'r')
+        for line in file:
+            song = line.split()
+            playlist.append(song)
+    except FileNotFoundError:
+        raise FileNotFoundError
+        return
+    
+    file.close()
+    return playlist
+
+# ####################################################### #
+
+@bot.command(pass_context=True)
+async def playlist(ctx, name):
+    try:
+        songs = read_playlist(name)
+    except FileNotFoundError:
+        await ctx.message.channel.send('Playlist ' + name + ' doesn\'t exist')
+        return
+    
+    for songs in name:
+        await play.invoke(ctx, songs)
+
+
+
+
 @bot.command(pass_context=True)
 async def create_playlist(ctx, playlist_name):
     """Creates an empty playlist file"""
