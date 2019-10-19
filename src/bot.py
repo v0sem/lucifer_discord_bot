@@ -7,9 +7,9 @@ import os
 # import random
 from discord.ext import commands
 
-TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.XZX_eQ.3FkXpO9EkNkchcxO99Jz_LL8kpU'
+TOKEN = ''
 client = discord.client
-PREFIX ='*'
+PREFIX = '*'
 bot = commands.Bot(command_prefix=PREFIX)
 
 PLAYLISTS_PATH = 'database/playlists/'
@@ -20,11 +20,13 @@ MUSIC = 'database/music/tmp/'
 extensions = []
 mutex = Lock()   
 
+
 @bot.event
 async def on_ready():
     print('Bot online and ready.')
     game = discord.Game("With your soul")
     await bot.change_presence(activity=game)
+
 
 @bot.event
 async def on_disconnect():
@@ -33,8 +35,8 @@ async def on_disconnect():
         try:
             if os.path.isfile(file_path):
                 os.unlink(file_path)
-        except Exception as e:
-            print(e)
+        except Exception as excep:
+            print(excep)
 
 if __name__ == "__main__":
     for extension in extensions:
@@ -59,8 +61,8 @@ async def join(ctx):
         ch = ctx.message.author.voice.channel
         await ch.connect()
         await ctx.message.channel.send('Joined voice channel')
-    except (discord.ClientException, AttributeError) as e:
-        print(e)
+    except (discord.ClientException, AttributeError) as excep:
+        print(excep)
         await ctx.message.channel.send('This is not okay dude')
 
 
@@ -73,17 +75,20 @@ async def leave(ctx):
     else:
         await voice_ch.disconnect()
 
+
 # ########################AUX FUNCTION################### #
-def queue(voice_ch, save, query):
+def queue(voice_ch, save):
     mutex.acquire()
     try:
         voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
+        print("Playing")
 
         while voice_ch.is_playing() or voice_ch.is_paused():
             pass
     finally:
         mutex.release() 
 # ####################################################### #
+
 
 @bot.command(pass_context=True)
 async def play(ctx, *song_name):
@@ -113,10 +118,10 @@ async def play(ctx, *song_name):
     }
     
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download(['ytsearch:'+ query])
+        ydl.download(['ytsearch:' + query])
     
-    #voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
-    thread = Thread(target = queue, args = (voice_ch, save, query))
+    # voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
+    thread = Thread(target=queue, args=(voice_ch, save))
     thread.start()
     await ctx.message.channel.send(query + ' queued')
 
@@ -148,30 +153,32 @@ async def resume(ctx):
     """Skips the song that is currently playing"""
     voice_ch = ctx.message.guild.voice_client
     if voice_ch is None:
-        await ctx.message.channel.send('Nothing on queue! use '+ PREFIX +'play to queue something')
+        await ctx.message.channel.send('Nothing on queue! use ' + PREFIX + 'play to queue something')
         return
     
     voice_ch.resume()
 
 # Playlist functions
 
+
 # ########################AUX FUNCTION################### #
 def read_playlist(path):
     
-    playlist = []
+    rplaylist = []
     try:
         path = os.path.realpath(path)
         file = open(path + '.txt', 'r')
         for line in file:
             song = line.split()
-            playlist.append(song)
+            rplaylist.append(song)
     except FileNotFoundError:
         raise FileNotFoundError
     
     file.close()
-    return playlist
+    return rplaylist
 
 # ####################################################### #
+
 
 @bot.command(pass_context=True)
 async def playlist(ctx, name):
@@ -181,10 +188,8 @@ async def playlist(ctx, name):
         await ctx.message.channel.send('Playlist ' + name + ' doesn\'t exist')
         return
     
-    for songs in name:
-        await play.invoke(ctx, songs)
-
-
+    for song in songs:
+        await play.invoke(ctx, song)
 
 
 @bot.command(pass_context=True)
