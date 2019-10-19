@@ -7,7 +7,7 @@ import os
 # import random
 from discord.ext import commands
 
-TOKEN = ''
+TOKEN = 'NTU5ODA2OTYyNjAzMjYxOTky.XZX_eQ.3FkXpO9EkNkchcxO99Jz_LL8kpU'
 client = discord.client
 PREFIX ='*'
 bot = commands.Bot(command_prefix=PREFIX)
@@ -74,11 +74,8 @@ async def leave(ctx):
         await voice_ch.disconnect()
 
 # ########################AUX FUNCTION################### #
-async def queue(voice_ch, save, query):
+def queue(voice_ch, save, query):
     mutex.acquire()
-
-    game = discord.Game(query)
-    await bot.change_presence(activity=game)
     try:
         voice_ch.play(discord.FFmpegPCMAudio(MUSIC + save + '.mp3'))
 
@@ -170,7 +167,6 @@ def read_playlist(path):
             playlist.append(song)
     except FileNotFoundError:
         raise FileNotFoundError
-        return
     
     file.close()
     return playlist
